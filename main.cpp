@@ -76,6 +76,20 @@ int main(int argc, char *argv[]) {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    ImVec2 scenePlaybackWindowSize(640, 360);
+
+    GLuint fbo, framebufferColorTexture;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glGenTextures(1, &framebufferColorTexture);
+    glBindTexture(GL_TEXTURE_2D, framebufferColorTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, scenePlaybackWindowSize.x, scenePlaybackWindowSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebufferColorTexture, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     while (!glfwWindowShouldClose(window)) {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -83,6 +97,17 @@ int main(int argc, char *argv[]) {
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertexData), vertexData);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glViewport(0, 0, scenePlaybackWindowSize.x, scenePlaybackWindowSize.y);
+        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        shaderProgram.use();
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -95,7 +120,20 @@ int main(int argc, char *argv[]) {
         ImGui::ColorEdit3("Right Vertex Color", rightVertexColor);
         ImGui::End();
 
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertexData), vertexData);
+        ImGui::SetNextWindowSize(ImVec2(
+            scenePlaybackWindowSize.x,
+            scenePlaybackWindowSize.y + ImGui::GetFrameHeight()
+        ));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ImGui::Begin("Scene Playback");
+        ImGui::Image(
+            (void*)(uintptr_t)framebufferColorTexture,
+            scenePlaybackWindowSize,
+            ImVec2(0, 1),
+            ImVec2(1, 0)
+        );
+        ImGui::End();
+        ImGui::PopStyleVar();
 
         // Rendering
         ImGui::Render();
@@ -105,15 +143,12 @@ int main(int argc, char *argv[]) {
         glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        shaderProgram.use();
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
     }
 
+    glDeleteFramebuffers(1, &fbo);
     shaderProgram.cleanup();
 
     // Cleanup
