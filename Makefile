@@ -23,7 +23,9 @@ LIBRARY_PATHS = \
 
 LIBRARIES = -framework OpenGL -lglfw -lglew -lavcodec -lavutil
 
-SOURCE_FILES = main.cpp
+SOURCE_FILES = \
+	main.cpp \
+	ShaderProgram.cpp
 
 all:
 	g++ -o ${EXECUTABLE} -std=c++11 ${IMGUI_SOURCE_FILES} ${SOURCE_FILES} ${INCLUDE_PATHS} ${LIBRARY_PATHS} ${LIBRARIES}

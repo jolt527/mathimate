@@ -5,8 +5,9 @@
 
 #define GLEW_STATIC
 #include <GL/glew.h>
-
 #include <GLFW/glfw3.h>
+
+#include "ShaderProgram.h"
 
 static void glfw_error_callback(int error, const char* description) {
     std::cerr << "GLFW Error " << error << ": " << description << std::endl;
@@ -33,6 +34,12 @@ int main(int argc, char *argv[]) {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
+    glewExperimental = GL_TRUE;
+    if (GLEW_OK != glewInit()) {
+        glfwTerminate();
+        return -1;
+    }
+
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -45,6 +52,29 @@ int main(int argc, char *argv[]) {
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+
+    ShaderProgram shaderProgram;
+    shaderProgram.loadShadersFromFile("vertex.shader", "fragment.shader");
+
+    float vertexData[] = {
+         0.0f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.0f,    1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f
+    };
+    float *topVertexColor = &vertexData[3];
+    float *leftVertexColor = &vertexData[9];
+    float *rightVertexColor = &vertexData[15];
+
+    GLuint vbo, vao;
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     while (!glfwWindowShouldClose(window)) {
         // Poll and handle events (inputs, window resize, etc.)
@@ -59,20 +89,32 @@ int main(int argc, char *argv[]) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        ImGui::ShowDemoWindow();
+        ImGui::Begin("Vertex Parameters");
+        ImGui::ColorEdit3("Top Vertex Color", topVertexColor);
+        ImGui::ColorEdit3("Left Vertex Color", leftVertexColor);
+        ImGui::ColorEdit3("Right Vertex Color", rightVertexColor);
+        ImGui::End();
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertexData), vertexData);
 
         // Rendering
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(0.45f, 0.55f, 0.6f, 1.0f);
+        glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        shaderProgram.use();
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
     }
+
+    shaderProgram.cleanup();
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
