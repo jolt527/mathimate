@@ -19,8 +19,8 @@ Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float startPosit
          0.0f,  0.2f, 0.0f
     };
 
-    positionLocation = shaderProgram.getUniformLocation("position");
-    colorLocation = shaderProgram.getUniformLocation("color");
+    positionLocation = shaderProgram.getUniformLocation((char *)"position");
+    colorLocation = shaderProgram.getUniformLocation((char *)"color");
 
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -31,8 +31,8 @@ Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float startPosit
     glEnableVertexAttribArray(0);
 }
 
-void Triangle::renderFrame(int frame, int totalFrames) {
-    float interpolation = (float)frame / totalFrames;
+void Triangle::renderFrame(int frame, int lastFrame) {
+    float interpolation = (float)frame / lastFrame;
     float positionX = lerp(startPosition[0], endPosition[0], interpolation);
     float positionY = lerp(startPosition[1], endPosition[1], interpolation);
     float positionZ = lerp(startPosition[2], endPosition[2], interpolation);

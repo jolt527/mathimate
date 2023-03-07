@@ -5,7 +5,7 @@ class Displayable {
 
 public:
 
-    virtual void renderFrame(int frame, int totalFrames) = 0;
+    virtual void renderFrame(int frame, int lastFrame) = 0;
 };
 
 #endif

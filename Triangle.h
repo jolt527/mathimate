@@ -10,7 +10,7 @@ public:
 
     Triangle(ShaderProgram& shaderProgram, float color[], float startPosition[], float endPosition[]);
 
-    void renderFrame(int frame, int totalFrames);
+    void renderFrame(int frame, int lastFrame);
 
 private:
 

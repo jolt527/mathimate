@@ -11,6 +11,8 @@
 #include "Triangle.h"
 #include <algorithm>
 
+const float FRAMERATE = 60.0f;
+
 static void glfw_error_callback(int error, const char* description) {
     std::cerr << "GLFW Error " << error << ": " << description << std::endl;
 }
@@ -77,9 +79,15 @@ int main(int argc, char *argv[]) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    int frame = 0;
-    int totalFrames = 59;
+    float frame = 0.0f;
+    int lastFrame = 59;
+    bool isPlaying = false;
+    double previousTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
+        double currentTime = glfwGetTime();
+        double deltaTime = currentTime - previousTime;
+        previousTime = currentTime;
+
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
         // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
@@ -87,11 +95,19 @@ int main(int argc, char *argv[]) {
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
 
+        if (isPlaying) {
+            frame += deltaTime * FRAMERATE;
+            if (frame > lastFrame) {
+                frame = lastFrame;
+                isPlaying = false;
+            }
+        }
+
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glViewport(0, 0, scenePlaybackWindowSize.x, scenePlaybackWindowSize.y);
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        triangle.renderFrame(frame, totalFrames);
+        triangle.renderFrame(frame, lastFrame);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // Start the Dear ImGui frame
@@ -99,21 +115,35 @@ int main(int argc, char *argv[]) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Frame Control");
+        ImGui::Begin("Playback Control");
         ImGui::AlignTextToFramePadding();
         ImGui::Text("Frame");
         ImGui::PushButtonRepeat(true);
         ImGui::SameLine();
-        if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
-            frame = std::max(0, frame - 1);
+        if (ImGui::ArrowButton("##left", ImGuiDir_Left) && !isPlaying) {
+            frame = std::max(0, (int)frame - 1);
         }
         ImGui::SameLine();
-        ImGui::Text("%6d", frame);
+        ImGui::Text("%6d", (int)frame);
         ImGui::SameLine();
-        if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
-            frame = std::min(frame + 1, totalFrames);
+        if (ImGui::ArrowButton("##right", ImGuiDir_Right) && !isPlaying) {
+            frame = std::min((int)frame + 1, lastFrame);
         }
         ImGui::PopButtonRepeat();
+        if (ImGui::Button("Start") && !isPlaying) {
+            frame = 0;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(isPlaying ? "Pause" : "Play")) {
+            isPlaying = !isPlaying;
+            if (isPlaying && frame >= lastFrame) {
+                frame = 0;
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("End") && !isPlaying) {
+            frame = lastFrame;
+        }
         ImGui::End();
 
         ImGui::SetNextWindowSize(ImVec2(
