@@ -79,6 +79,10 @@ bool ShaderProgram::loadShadersFromFile(const char* vertexShaderFilename, const 
     return true;
 }
 
+GLint ShaderProgram::getUniformLocation(char* name) {
+    return glGetUniformLocation(shaderProgramId, name);
+}
+
 void ShaderProgram::use() {
     glUseProgram(shaderProgramId);
 }

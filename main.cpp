@@ -8,6 +8,8 @@
 #include <GLFW/glfw3.h>
 
 #include "ShaderProgram.h"
+#include "Triangle.h"
+#include <algorithm>
 
 static void glfw_error_callback(int error, const char* description) {
     std::cerr << "GLFW Error " << error << ": " << description << std::endl;
@@ -56,25 +58,10 @@ int main(int argc, char *argv[]) {
     ShaderProgram shaderProgram;
     shaderProgram.loadShadersFromFile("vertex.shader", "fragment.shader");
 
-    float vertexData[] = {
-         0.0f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.0f,    1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f
-    };
-    float *topVertexColor = &vertexData[3];
-    float *leftVertexColor = &vertexData[9];
-    float *rightVertexColor = &vertexData[15];
-
-    GLuint vbo, vao;
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    float color[] = { 0.0f, 1.0f, 0.0f };
+    float startPosition[] = { -0.8f, 0.5f, 0.0f };
+    float endPosition[] = { 0.8f, -0.5f, 0.0f };
+    Triangle triangle(shaderProgram, color, startPosition, endPosition);
 
     ImVec2 scenePlaybackWindowSize(640, 360);
 
@@ -90,6 +77,8 @@ int main(int argc, char *argv[]) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    int frame = 0;
+    int totalFrames = 59;
     while (!glfwWindowShouldClose(window)) {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -98,15 +87,11 @@ int main(int argc, char *argv[]) {
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
 
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertexData), vertexData);
-
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glViewport(0, 0, scenePlaybackWindowSize.x, scenePlaybackWindowSize.y);
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        shaderProgram.use();
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        triangle.renderFrame(frame, totalFrames);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // Start the Dear ImGui frame
@@ -114,10 +99,21 @@ int main(int argc, char *argv[]) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Vertex Parameters");
-        ImGui::ColorEdit3("Top Vertex Color", topVertexColor);
-        ImGui::ColorEdit3("Left Vertex Color", leftVertexColor);
-        ImGui::ColorEdit3("Right Vertex Color", rightVertexColor);
+        ImGui::Begin("Frame Control");
+        ImGui::AlignTextToFramePadding();
+        ImGui::Text("Frame");
+        ImGui::PushButtonRepeat(true);
+        ImGui::SameLine();
+        if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
+            frame = std::max(0, frame - 1);
+        }
+        ImGui::SameLine();
+        ImGui::Text("%6d", frame);
+        ImGui::SameLine();
+        if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
+            frame = std::min(frame + 1, totalFrames);
+        }
+        ImGui::PopButtonRepeat();
         ImGui::End();
 
         ImGui::SetNextWindowSize(ImVec2(

@@ -8,6 +8,7 @@ class ShaderProgram {
 public:
 
     bool loadShadersFromFile(const char* vertexShaderFilename, const char* fragmentShaderFilename);
+    GLint getUniformLocation(char* name);
     void use();
     void cleanup();
 
