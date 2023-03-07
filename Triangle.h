@@ -20,10 +20,8 @@ private:
 
     ShaderProgram& shaderProgram;
     GLuint vbo, vao;
-    GLint positionLocation;
+    GLint modelMatrixLocation;
     GLint colorLocation;
-
-    float lerp(float a, float b, float t);
 };
 
 #endif

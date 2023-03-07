@@ -2,8 +2,8 @@
 
 layout (location = 0) in vec3 vertex;
 
-uniform vec3 position;
+uniform mat4 modelMatrix;
 
 void main() {
-    gl_Position = vec4(vertex + position, 1.0);
+    gl_Position = modelMatrix * vec4(vertex, 1.0);
 }

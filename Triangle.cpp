@@ -1,17 +1,13 @@
 #include "Triangle.h"
 #include <GL/glew.h>
+#include "glm/gtx/transform.hpp"
+#include <algorithm>
 
 Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float startPosition[], float endPosition[])
 : shaderProgram(shaderProgram) {
-    this->color[0] = color[0];
-    this->color[1] = color[1];
-    this->color[2] = color[2];
-    this->startPosition[0] = startPosition[0];
-    this->startPosition[1] = startPosition[1];
-    this->startPosition[2] = startPosition[2];
-    this->endPosition[0] = endPosition[0];
-    this->endPosition[1] = endPosition[1];
-    this->endPosition[2] = endPosition[2];
+    std::copy(color, color + 3, this->color);
+    std::copy(startPosition, startPosition + 3, this->startPosition);
+    std::copy(endPosition, endPosition + 3, this->endPosition);
 
     float vertexData[] = {
         -0.2f, -0.2f, 0.0f,
@@ -19,7 +15,7 @@ Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float startPosit
          0.0f,  0.2f, 0.0f
     };
 
-    positionLocation = shaderProgram.getUniformLocation((char *)"position");
+    modelMatrixLocation = shaderProgram.getUniformLocation((char *)"modelMatrix");
     colorLocation = shaderProgram.getUniformLocation((char *)"color");
 
     glGenVertexArrays(1, &vao);
@@ -33,18 +29,17 @@ Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float startPosit
 
 void Triangle::renderFrame(int frame, int lastFrame) {
     float interpolation = (float)frame / lastFrame;
-    float positionX = lerp(startPosition[0], endPosition[0], interpolation);
-    float positionY = lerp(startPosition[1], endPosition[1], interpolation);
-    float positionZ = lerp(startPosition[2], endPosition[2], interpolation);
+    glm::vec3 translationAmount = glm::vec3(
+        glm::mix(startPosition[0], endPosition[0], interpolation),
+        glm::mix(startPosition[1], endPosition[1], interpolation),
+        glm::mix(startPosition[2], endPosition[2], interpolation)
+    );
+    glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), translationAmount);
 
     shaderProgram.use();
-    glUniform3f(positionLocation, positionX, positionY, positionZ);
-    glUniform3f(colorLocation, color[0], color[1], color[2]);
+    glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+    glUniform3fv(colorLocation, 1, &color[0]);
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-}
-
-float Triangle::lerp(float a, float b, float t) {
-    return a + t * (b - a);
 }
