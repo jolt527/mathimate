@@ -61,9 +61,9 @@ int main(int argc, char *argv[]) {
     shaderProgram.loadShadersFromFile("vertex.shader", "fragment.shader");
 
     float color[] = { 0.0f, 1.0f, 0.0f };
-    float initialPosition[] = { -0.8f, 0.5f, 0.0f };
+    float initialPosition[] = { -0.8f, -1.0f, 0.0f };
     float initialScaling[] = { 1.0f, 1.0f, 1.0f };
-    Triangle triangle(shaderProgram, color, initialPosition, initialScaling);
+    Triangle triangle(shaderProgram, color, initialPosition, initialScaling, 90.0f);
 
     ImVec2 scenePlaybackWindowSize(640, 360);
 

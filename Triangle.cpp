@@ -3,7 +3,7 @@
 #include "glm/gtx/transform.hpp"
 #include <algorithm>
 
-Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float initialPosition[], float initialScale[])
+Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float initialPosition[], float initialScale[], float initialRotationDegrees)
 : shaderProgram(shaderProgram) {
     std::copy(color, color + 3, this->color);
 
@@ -11,31 +11,34 @@ Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float initialPos
     propertyIntervalManager.setInitialPosition(initialPositionVector);
     glm::vec3 initialScaleVector = glm::vec3(initialScale[0], initialScale[1], initialScale[2]);
     propertyIntervalManager.setInitialScaling(initialScaleVector);
+    propertyIntervalManager.setInitialRotationDegrees(initialRotationDegrees);
 
     glm::vec3 startValue = initialPositionVector;
-    glm::vec3 endValue = glm::vec3(0.25f, 0.25f, 0.0f);
+    glm::vec3 endValue = glm::vec3(-0.8f, 0.8f, 0.0f);
     propertyIntervalManager.addTranslationInterval(0, 59, startValue, endValue);
 
+    propertyIntervalManager.addRotationInterval(30, 59, initialRotationDegrees, -45.0f, true);
+
+    startValue = endValue;
+    endValue = glm::vec3(0.8f, -0.8f, 0.0f);
+    propertyIntervalManager.addTranslationInterval(60, 89, startValue, endValue);
+
+    propertyIntervalManager.addRotationInterval(75, 89, -45.0f, 90.0f, false);
+
+    propertyIntervalManager.addRotationInterval(90, 104, 90.0f, 115.0f, false);
+
+    startValue = endValue;
+    endValue = glm::vec3(0.0f, 0.8f, 0.0f);
+    propertyIntervalManager.addTranslationInterval(105, 134, startValue, endValue);
+
     startValue = glm::vec3(1.0f, 1.0f, 1.0f);
-    endValue = glm::vec3(2.0f, 2.0f, 2.0f);
-    propertyIntervalManager.addScalingInterval(60, 89, startValue, endValue);
-
-    startValue = glm::vec3(2.0f, 2.0f, 2.0f);
-    endValue = glm::vec3(1.0f, 1.0f, 1.0f);
-    propertyIntervalManager.addScalingInterval(90, 119, startValue, endValue);
-
-    startValue = glm::vec3(0.25f, 0.25f, 0.0f);
-    endValue = glm::vec3(1.0f, -1.0f, 0.0f);
-    propertyIntervalManager.addTranslationInterval(120, 179, startValue, endValue);
-
-    startValue = glm::vec3(1.0f, 1.0f, 1.0f);
-    endValue = glm::vec3(0.0f, 0.0f, 1.0f);
-    propertyIntervalManager.addScalingInterval(120, 179, startValue, endValue);
+    endValue = glm::vec3();
+    propertyIntervalManager.addScalingInterval(110, 134, startValue, endValue);
 
     float vertexData[] = {
-        -0.2f, -0.2f, 0.0f,
-         0.2f, -0.2f, 0.0f,
-         0.0f,  0.2f, 0.0f
+        0.0f,  0.1f, 0.0f,
+        0.0f, -0.1f, 0.0f,
+        0.4f,  0.0f, 0.0f
     };
 
     modelMatrixLocation = shaderProgram.getUniformLocation((char *)"modelMatrix");

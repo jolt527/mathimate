@@ -9,7 +9,7 @@ class Triangle : public Displayable {
 
 public:
 
-    Triangle(ShaderProgram& shaderProgram, float color[], float initialPosition[], float initialScale[]);
+    Triangle(ShaderProgram& shaderProgram, float color[], float initialPosition[], float initialScale[], float initialRotationDegrees);
 
     void renderFrame(int frame);
 
