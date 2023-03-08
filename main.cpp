@@ -62,7 +62,8 @@ int main(int argc, char *argv[]) {
 
     float color[] = { 0.0f, 1.0f, 0.0f };
     float initialPosition[] = { -0.8f, 0.5f, 0.0f };
-    Triangle triangle(shaderProgram, color, initialPosition);
+    float initialScaling[] = { 1.0f, 1.0f, 1.0f };
+    Triangle triangle(shaderProgram, color, initialPosition, initialScaling);
 
     ImVec2 scenePlaybackWindowSize(640, 360);
 
@@ -79,7 +80,7 @@ int main(int argc, char *argv[]) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     float frame = 0.0f;
-    int lastFrame = 59;
+    int lastFrame = 180;
     bool isPlaying = false;
     double previousTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {

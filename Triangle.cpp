@@ -3,20 +3,34 @@
 #include "glm/gtx/transform.hpp"
 #include <algorithm>
 
-Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float initialPosition[])
+Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float initialPosition[], float initialScale[])
 : shaderProgram(shaderProgram) {
     std::copy(color, color + 3, this->color);
 
     glm::vec3 initialPositionVector = glm::vec3(initialPosition[0], initialPosition[1], initialPosition[2]);
     propertyIntervalManager.setInitialPosition(initialPositionVector);
+    glm::vec3 initialScaleVector = glm::vec3(initialScale[0], initialScale[1], initialScale[2]);
+    propertyIntervalManager.setInitialScaling(initialScaleVector);
 
-    glm::vec3 startPositionVector = initialPositionVector;
-    glm::vec3 endPositionVector = glm::vec3(0.0f, 0.8f, 0.0f);
-    propertyIntervalManager.addTranslationInterval(0, 15, startPositionVector, endPositionVector);
+    glm::vec3 startValue = initialPositionVector;
+    glm::vec3 endValue = glm::vec3(0.25f, 0.25f, 0.0f);
+    propertyIntervalManager.addTranslationInterval(0, 59, startValue, endValue);
 
-    startPositionVector = endPositionVector;
-    endPositionVector = glm::vec3(0.8f, -0.5f, 0.0f);
-    propertyIntervalManager.addTranslationInterval(49, 59, startPositionVector, endPositionVector);
+    startValue = glm::vec3(1.0f, 1.0f, 1.0f);
+    endValue = glm::vec3(2.0f, 2.0f, 2.0f);
+    propertyIntervalManager.addScalingInterval(60, 89, startValue, endValue);
+
+    startValue = glm::vec3(2.0f, 2.0f, 2.0f);
+    endValue = glm::vec3(1.0f, 1.0f, 1.0f);
+    propertyIntervalManager.addScalingInterval(90, 119, startValue, endValue);
+
+    startValue = glm::vec3(0.25f, 0.25f, 0.0f);
+    endValue = glm::vec3(1.0f, -1.0f, 0.0f);
+    propertyIntervalManager.addTranslationInterval(120, 179, startValue, endValue);
+
+    startValue = glm::vec3(1.0f, 1.0f, 1.0f);
+    endValue = glm::vec3(0.0f, 0.0f, 1.0f);
+    propertyIntervalManager.addScalingInterval(120, 179, startValue, endValue);
 
     float vertexData[] = {
         -0.2f, -0.2f, 0.0f,
