@@ -3,11 +3,20 @@
 #include "glm/gtx/transform.hpp"
 #include <algorithm>
 
-Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float startPosition[], float endPosition[])
+Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float initialPosition[])
 : shaderProgram(shaderProgram) {
     std::copy(color, color + 3, this->color);
-    std::copy(startPosition, startPosition + 3, this->startPosition);
-    std::copy(endPosition, endPosition + 3, this->endPosition);
+
+    glm::vec3 initialPositionVector = glm::vec3(initialPosition[0], initialPosition[1], initialPosition[2]);
+    propertyIntervalManager.setInitialPosition(initialPositionVector);
+
+    glm::vec3 startPositionVector = initialPositionVector;
+    glm::vec3 endPositionVector = glm::vec3(0.0f, 0.8f, 0.0f);
+    propertyIntervalManager.addTranslationInterval(0, 15, startPositionVector, endPositionVector);
+
+    startPositionVector = endPositionVector;
+    endPositionVector = glm::vec3(0.8f, -0.5f, 0.0f);
+    propertyIntervalManager.addTranslationInterval(49, 59, startPositionVector, endPositionVector);
 
     float vertexData[] = {
         -0.2f, -0.2f, 0.0f,
@@ -27,14 +36,8 @@ Triangle::Triangle(ShaderProgram& shaderProgram, float color[], float startPosit
     glEnableVertexAttribArray(0);
 }
 
-void Triangle::renderFrame(int frame, int lastFrame) {
-    float interpolation = (float)frame / lastFrame;
-    glm::vec3 translationAmount = glm::vec3(
-        glm::mix(startPosition[0], endPosition[0], interpolation),
-        glm::mix(startPosition[1], endPosition[1], interpolation),
-        glm::mix(startPosition[2], endPosition[2], interpolation)
-    );
-    glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), translationAmount);
+void Triangle::renderFrame(int frame) {
+    glm::mat4 modelMatrix = propertyIntervalManager.calculateModelMatrix(frame);
 
     shaderProgram.use();
     glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);

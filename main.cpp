@@ -61,9 +61,8 @@ int main(int argc, char *argv[]) {
     shaderProgram.loadShadersFromFile("vertex.shader", "fragment.shader");
 
     float color[] = { 0.0f, 1.0f, 0.0f };
-    float startPosition[] = { -0.8f, 0.5f, 0.0f };
-    float endPosition[] = { 0.8f, -0.5f, 0.0f };
-    Triangle triangle(shaderProgram, color, startPosition, endPosition);
+    float initialPosition[] = { -0.8f, 0.5f, 0.0f };
+    Triangle triangle(shaderProgram, color, initialPosition);
 
     ImVec2 scenePlaybackWindowSize(640, 360);
 
@@ -107,7 +106,7 @@ int main(int argc, char *argv[]) {
         glViewport(0, 0, scenePlaybackWindowSize.x, scenePlaybackWindowSize.y);
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        triangle.renderFrame(frame, lastFrame);
+        triangle.renderFrame(frame);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // Start the Dear ImGui frame

@@ -26,7 +26,8 @@ LIBRARIES = -framework OpenGL -lglfw -lglew -lavcodec -lavutil
 SOURCE_FILES = \
 	main.cpp \
 	ShaderProgram.cpp \
-	Triangle.cpp
+	Triangle.cpp \
+	PropertyIntervalManager.cpp
 
 all:
 	g++ -o ${EXECUTABLE} -std=c++11 ${IMGUI_SOURCE_FILES} ${SOURCE_FILES} ${INCLUDE_PATHS} ${LIBRARY_PATHS} ${LIBRARIES}
